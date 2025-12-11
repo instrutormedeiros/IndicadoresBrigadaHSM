@@ -1,6 +1,6 @@
 /**
  * VIEWS
- * Todas as views (páginas) do dashboard - OTIMIZADAS PARA ABOVE THE FOLD
+ * Todas as views (páginas) do dashboard - COM SUPORTE A MULTI-ANO
  */
 
 var Views = {
@@ -25,8 +25,8 @@ var Views = {
                                 <span class="w-1 h-5 bg-blue-600 rounded-full"></span>\
                                 Evolução Mensal (%)\
                             </h3>\
-                            <span class="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full font-semibold">\
-                                Jul-Nov 2025\
+                            <span id="chart-period-label" class="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full font-semibold">\
+                                2025\
                             </span>\
                         </div>\
                         <div class="h-[280px] w-full relative">\
@@ -49,10 +49,10 @@ var Views = {
                             <h4 class="text-sm font-bold text-blue-700 uppercase tracking-wide">Variação Total</h4>\
                             <i class="ph-fill ph-trend-up text-3xl text-blue-600"></i>\
                         </div>\
-                        <div class="text-4xl font-bold text-blue-900 mb-2">+27.4%</div>\
-                        <p class="text-sm text-blue-700">Set (69.7%) → Nov (97.1%)</p>\
+                        <div id="variacao-valor" class="text-4xl font-bold text-blue-900 mb-2">+27.4%</div>\
+                        <p id="variacao-texto" class="text-sm text-blue-700">Set (69.7%) → Nov (97.1%)</p>\
                         <div class="mt-4 pt-4 border-t border-blue-200">\
-                            <div class="text-xs text-blue-600 font-semibold">Melhor Mês: <span class="text-blue-900">Novembro</span></div>\
+                            <div class="text-xs text-blue-600 font-semibold">Melhor Mês: <span id="melhor-mes" class="text-blue-900">Novembro</span></div>\
                         </div>\
                     </div>\
                     \
@@ -62,8 +62,8 @@ var Views = {
                             <h4 class="text-sm font-bold text-emerald-700 uppercase tracking-wide">Status Atual</h4>\
                             <i class="ph-fill ph-check-circle text-3xl text-emerald-600"></i>\
                         </div>\
-                        <div class="text-4xl font-bold text-emerald-900 mb-2">97.1%</div>\
-                        <p class="text-sm text-emerald-700">Conformidade Novembro/2025</p>\
+                        <div id="status-atual-valor" class="text-4xl font-bold text-emerald-900 mb-2">97.1%</div>\
+                        <p id="status-atual-texto" class="text-sm text-emerald-700">Conformidade Nov/2025</p>\
                         <div class="mt-4 pt-4 border-t border-emerald-200">\
                             <div class="text-xs text-emerald-600 font-semibold">Meta Anual: <span class="text-emerald-900">> 95%</span></div>\
                         </div>\
@@ -76,7 +76,9 @@ var Views = {
     },
     
     initializeOverview: function() {
-        var data = getMonthData('all');
+        var currentYear = AppState.currentYear;
+        var yearData = DATABASE[currentYear];
+        var data = getMonthData(currentYear, 'all');
         
         Components.renderKPICards({
             conformidade: data.conformidade,
@@ -84,28 +86,72 @@ var Views = {
             tempoEvacuacao: '03:12'
         });
         
-        Components.renderInsights('all');
+        Components.renderInsights(currentYear, 'all');
         
         ChartManager.createConformidade(
             'complianceChart',
-            DATABASE.conformidade.labels,
-            DATABASE.conformidade.values
+            yearData.conformidade.labels,
+            yearData.conformidade.values
         );
+        
+        // Atualizar label do período
+        document.getElementById('chart-period-label').textContent = currentYear;
+        
+        // Calcular e exibir variação
+        this.updateVariacaoCard(currentYear);
     },
     
-    updateOverview: function(month) {
+    updateOverview: function(year, month) {
+        year = year || AppState.currentYear;
         month = month || 'all';
-        var data = getMonthData(month);
+        
+        var yearData = DATABASE[year];
+        var data = getMonthData(year, month);
         
         Components.updateKPIValues(data);
-        Components.renderInsights(month);
+        Components.renderInsights(year, month);
         
         if (month === 'all') {
-            ChartManager.update('conformidade', DATABASE.conformidade.labels, DATABASE.conformidade.values);
+            ChartManager.update('conformidade', yearData.conformidade.labels, yearData.conformidade.values);
         } else {
-            var monthIndex = MESES.mapping[month];
-            ChartManager.update('conformidade', [MESES.labels[monthIndex]], [DATABASE.conformidade.values[monthIndex]]);
+            var monthIndex = MESES[year].mapping[month];
+            if (monthIndex !== undefined) {
+                ChartManager.update('conformidade', [yearData.conformidade.labels[monthIndex]], [yearData.conformidade.values[monthIndex]]);
+            }
         }
+        
+        // Atualizar cards de métricas
+        this.updateVariacaoCard(year);
+    },
+    
+    updateVariacaoCard: function(year) {
+        var yearData = DATABASE[year];
+        var values = yearData.conformidade.values.filter(function(v) { return v > 0; }); // Filtrar zeros
+        
+        if (values.length === 0) return;
+        
+        var minValue = Math.min.apply(null, values);
+        var maxValue = Math.max.apply(null, values);
+        var variacao = ((maxValue - minValue) / minValue * 100).toFixed(1);
+        
+        var minIndex = yearData.conformidade.values.indexOf(minValue);
+        var maxIndex = yearData.conformidade.values.indexOf(maxValue);
+        
+        var minMes = yearData.conformidade.labels[minIndex];
+        var maxMes = yearData.conformidade.labels[maxIndex];
+        
+        // Atualizar variação
+        document.getElementById('variacao-valor').textContent = '+' + variacao + '%';
+        document.getElementById('variacao-texto').textContent = minMes + ' (' + minValue + '%) → ' + maxMes + ' (' + maxValue + '%)';
+        
+        // Atualizar melhor mês
+        document.getElementById('melhor-mes').textContent = MESES[year].fullNames[maxIndex];
+        
+        // Atualizar status atual (último mês com dados)
+        var lastIndex = values.length - 1;
+        var lastRealIndex = yearData.conformidade.values.lastIndexOf(values[lastIndex]);
+        document.getElementById('status-atual-valor').textContent = values[lastIndex].toFixed(1) + '%';
+        document.getElementById('status-atual-texto').textContent = 'Conformidade ' + yearData.conformidade.labels[lastRealIndex] + '/' + year;
     },
     
     /**
@@ -147,18 +193,32 @@ var Views = {
             </div>\
         ';
         
+        var currentYear = AppState.currentYear;
+        var yearData = DATABASE[currentYear];
+        
         ChartManager.createConformidade(
             'complianceChartDetail',
-            DATABASE.conformidade.labels,
-            DATABASE.conformidade.values
+            yearData.conformidade.labels,
+            yearData.conformidade.values
         );
         
         ChartManager.createObstrucoes(
             'obstructionsChart',
-            DATABASE.conformidade.labels,
-            DATABASE.obstrucoes.extintores,
-            DATABASE.obstrucoes.hidrantes
+            yearData.conformidade.labels,
+            yearData.obstrucoes.extintores,
+            yearData.obstrucoes.hidrantes
         );
+    },
+    
+    updateConformidade: function(year) {
+        year = year || AppState.currentYear;
+        var yearData = DATABASE[year];
+        
+        ChartManager.update('complianceChartDetail', yearData.conformidade.labels, yearData.conformidade.values);
+        ChartManager.update('obstrucoes', yearData.conformidade.labels, {
+            ext: yearData.obstrucoes.extintores,
+            hid: yearData.obstrucoes.hidrantes
+        });
     },
     
     /**
@@ -175,7 +235,7 @@ var Views = {
                             <i class="ph-fill ph-clipboard-text text-blue-600 text-2xl"></i>\
                             Checklist de Conformidade por Sistema\
                         </h3>\
-                        <span class="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full font-semibold">\
+                        <span id="inspecao-periodo-label" class="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full font-semibold">\
                             Última Inspeção: Nov/2025\
                         </span>\
                     </div>\
@@ -185,14 +245,33 @@ var Views = {
             </div>\
         ';
         
-        var data = getMonthData('all');
+        var data = getMonthData(AppState.currentYear, 'all');
         Components.renderChecklistBars(data.execucao);
+        
+        // Atualizar label
+        var yearData = DATABASE[AppState.currentYear];
+        var lastIndex = yearData.conformidade.values.filter(function(v) { return v > 0; }).length - 1;
+        var lastLabel = yearData.conformidade.labels[lastIndex];
+        document.getElementById('inspecao-periodo-label').textContent = 'Última Inspeção: ' + lastLabel + '/' + AppState.currentYear;
     },
     
-    updateInspecao: function(month) {
+    updateInspecao: function(year, month) {
+        year = year || AppState.currentYear;
         month = month || 'all';
-        var data = getMonthData(month);
+        
+        var data = getMonthData(year, month);
         Components.renderChecklistBars(data.execucao);
+        
+        // Atualizar label
+        if (month === 'all') {
+            var yearData = DATABASE[year];
+            var lastIndex = yearData.conformidade.values.filter(function(v) { return v > 0; }).length - 1;
+            var lastLabel = yearData.conformidade.labels[lastIndex];
+            document.getElementById('inspecao-periodo-label').textContent = 'Última Inspeção: ' + lastLabel + '/' + year;
+        } else {
+            var mesLabel = DATABASE[year].conformidade.labels[MESES[year].mapping[month]];
+            document.getElementById('inspecao-periodo-label').textContent = 'Inspeção: ' + mesLabel + '/' + year;
+        }
     },
     
     /**
@@ -210,7 +289,7 @@ var Views = {
                         <div class="flex justify-between items-center mb-4">\
                             <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
                                 <span class="w-1 h-5 bg-emerald-600 rounded-full"></span>\
-                                Histórico de Simulados\
+                                Histórico de Simulados <span id="evacuacao-ano-label" class="text-xs text-slate-500 font-normal">(2025)</span>\
                             </h3>\
                             <div class="flex gap-2">\
                                 <span class="px-2 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-700">\
@@ -233,8 +312,8 @@ var Views = {
                                 <h4 class="text-xs font-bold text-emerald-700 uppercase">Melhor Tempo</h4>\
                                 <i class="ph-fill ph-trophy text-2xl text-emerald-600"></i>\
                             </div>\
-                            <div class="text-3xl font-bold text-emerald-900">03:08</div>\
-                            <p class="text-xs text-emerald-700 mt-1">Simulado de Maio/2025</p>\
+                            <div id="melhor-tempo-valor" class="text-3xl font-bold text-emerald-900">03:08</div>\
+                            <p id="melhor-tempo-texto" class="text-xs text-emerald-700 mt-1">Simulado de Maio/2025</p>\
                         </div>\
                         \
                         <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">\
@@ -242,8 +321,8 @@ var Views = {
                                 <h4 class="text-xs font-bold text-blue-700 uppercase">Último Simulado</h4>\
                                 <i class="ph-fill ph-timer text-2xl text-blue-600"></i>\
                             </div>\
-                            <div class="text-3xl font-bold text-blue-900">03:12</div>\
-                            <p class="text-xs text-blue-700 mt-1">Setembro/2025 • 15 pessoas</p>\
+                            <div id="ultimo-tempo-valor" class="text-3xl font-bold text-blue-900">03:12</div>\
+                            <p id="ultimo-tempo-texto" class="text-xs text-blue-700 mt-1">Setembro/2025 • 15 pessoas</p>\
                         </div>\
                         \
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200">\
@@ -259,11 +338,44 @@ var Views = {
             </div>\
         ';
         
-        ChartManager.createEvacuacao(
-            'evacuationChart',
-            DATABASE.evacuacao.labels,
-            DATABASE.evacuacao.tempos
-        );
+        var currentYear = AppState.currentYear;
+        var yearData = DATABASE[currentYear];
+        
+        if (yearData.evacuacao.labels.length > 0) {
+            ChartManager.createEvacuacao(
+                'evacuationChart',
+                yearData.evacuacao.labels,
+                yearData.evacuacao.tempos
+            );
+            
+            // Atualizar cards
+            this.updateEvacuacaoCards(currentYear);
+        }
+        
+        document.getElementById('evacuacao-ano-label').textContent = '(' + currentYear + ')';
+    },
+    
+    updateEvacuacaoCards: function(year) {
+        var yearData = DATABASE[year];
+        var tempos = yearData.evacuacao.tempos;
+        
+        if (tempos.length === 0) return;
+        
+        // Melhor tempo
+        var melhorTempo = Math.min.apply(null, tempos);
+        var melhorIndex = tempos.indexOf(melhorTempo);
+        var melhorMes = yearData.evacuacao.labels[melhorIndex];
+        
+        document.getElementById('melhor-tempo-valor').textContent = formatTime(melhorTempo);
+        document.getElementById('melhor-tempo-texto').textContent = 'Simulado de ' + melhorMes + '/' + year;
+        
+        // Último simulado
+        var ultimoTempo = tempos[tempos.length - 1];
+        var ultimoMes = yearData.evacuacao.labels[tempos.length - 1];
+        var ultimaPop = yearData.evacuacao.populacao[tempos.length - 1];
+        
+        document.getElementById('ultimo-tempo-valor').textContent = formatTime(ultimoTempo);
+        document.getElementById('ultimo-tempo-texto').textContent = ultimoMes + '/' + year + ' • ' + ultimaPop + ' pessoas';
     },
     
     /**
@@ -271,6 +383,26 @@ var Views = {
      */
     renderBrigada: function() {
         var container = document.getElementById('dashboard-content');
+        
+        var currentYear = AppState.currentYear;
+        var brigadaData = DATABASE[currentYear].brigada;
+        
+        var taxaConversao = brigadaData.totalInscritos > 0 
+            ? ((brigadaData.totalTreinados / brigadaData.totalInscritos) * 100).toFixed(1)
+            : '0.0';
+        
+        var turmasHTML = brigadaData.turmas.map(function(turma) {
+            var taxa = turma.inscritos > 0 ? ((turma.treinados / turma.inscritos) * 100).toFixed(1) : '0.0';
+            var badgeClass = taxa >= 60 ? 'badge-success' : 'badge-warning';
+            
+            return '<tr>\
+                        <td class="font-semibold">' + turma.mes + '/' + currentYear + '</td>\
+                        <td class="text-center tabular-nums">' + turma.inscritos + '</td>\
+                        <td class="text-center tabular-nums font-bold ' + (taxa >= 60 ? 'text-emerald-600' : 'text-orange-600') + '">' + turma.treinados + '</td>\
+                        <td class="text-center"><span class="badge ' + badgeClass + '">' + taxa + '%</span></td>\
+                        <td class="text-center text-slate-600 font-mono text-xs">' + turma.validade + '</td>\
+                    </tr>';
+        }).join('');
         
         container.innerHTML = '\
             <div id="content-brigada" class="fade-enter space-y-6">\
@@ -281,7 +413,7 @@ var Views = {
                             <h4 class="text-sm font-bold text-purple-700 uppercase">Total Inscritos</h4>\
                             <i class="ph-fill ph-user-plus text-3xl text-purple-600"></i>\
                         </div>\
-                        <div class="text-4xl font-bold text-purple-900 mb-2">109</div>\
+                        <div class="text-4xl font-bold text-purple-900 mb-2">' + brigadaData.totalInscritos + '</div>\
                         <p class="text-xs text-purple-700">Colaboradores registrados</p>\
                     </div>\
                     \
@@ -290,7 +422,7 @@ var Views = {
                             <h4 class="text-sm font-bold text-emerald-700 uppercase">Brigadistas Ativos</h4>\
                             <i class="ph-fill ph-shield-check text-3xl text-emerald-600"></i>\
                         </div>\
-                        <div class="text-4xl font-bold text-emerald-900 mb-2">55</div>\
+                        <div class="text-4xl font-bold text-emerald-900 mb-2">' + brigadaData.totalTreinados + '</div>\
                         <p class="text-xs text-emerald-700">Certificados e operacionais</p>\
                     </div>\
                     \
@@ -299,7 +431,7 @@ var Views = {
                             <h4 class="text-sm font-bold text-blue-700 uppercase">Taxa de Conversão</h4>\
                             <i class="ph-fill ph-chart-pie text-3xl text-blue-600"></i>\
                         </div>\
-                        <div class="text-4xl font-bold text-blue-900 mb-2">50.5%</div>\
+                        <div class="text-4xl font-bold text-blue-900 mb-2">' + taxaConversao + '%</div>\
                         <p class="text-xs text-blue-700">Conclusão dos treinamentos</p>\
                     </div>\
                 </div>\
@@ -308,7 +440,7 @@ var Views = {
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
                     <h3 class="text-slate-800 font-bold text-base mb-4 flex items-center gap-2">\
                         <i class="ph-fill ph-graduation-cap text-purple-600 text-xl"></i>\
-                        Turmas de Capacitação 2025\
+                        Turmas de Capacitação ' + currentYear + '\
                     </h3>\
                     <div class="overflow-x-auto">\
                         <table class="data-table">\
@@ -322,27 +454,7 @@ var Views = {
                                 </tr>\
                             </thead>\
                             <tbody>\
-                                <tr>\
-                                    <td class="font-semibold">Março/2025</td>\
-                                    <td class="text-center tabular-nums">39</td>\
-                                    <td class="text-center tabular-nums font-bold text-emerald-600">27</td>\
-                                    <td class="text-center"><span class="badge badge-success">69.2%</span></td>\
-                                    <td class="text-center text-slate-600 font-mono text-xs">01/03/2026</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Junho/2025</td>\
-                                    <td class="text-center tabular-nums">21</td>\
-                                    <td class="text-center tabular-nums font-bold text-orange-600">8</td>\
-                                    <td class="text-center"><span class="badge badge-warning">38.1%</span></td>\
-                                    <td class="text-center text-slate-600 font-mono text-xs">01/07/2026</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Setembro/2025</td>\
-                                    <td class="text-center tabular-nums">49</td>\
-                                    <td class="text-center tabular-nums font-bold text-blue-600">20</td>\
-                                    <td class="text-center"><span class="badge badge-warning">40.8%</span></td>\
-                                    <td class="text-center text-slate-600 font-mono text-xs">01/09/2026</td>\
-                                </tr>\
+                                ' + (turmasHTML || '<tr><td colspan="5" class="text-center text-slate-400 py-8">Nenhuma turma cadastrada para ' + currentYear + '</td></tr>') + '\
                             </tbody>\
                         </table>\
                     </div>\
