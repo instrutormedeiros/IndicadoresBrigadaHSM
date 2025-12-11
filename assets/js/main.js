@@ -1,11 +1,12 @@
 /**
  * MAIN APPLICATION
- * Controla inicialização e funcionalidades globais
+ * Controla inicialização e funcionalidades globais COM MULTI-ANO
  */
 
 // Estado global da aplicação
 var AppState = {
     currentTab: 'overview',
+    currentYear: '2025',
     currentMonth: 'all'
 };
 
@@ -22,6 +23,41 @@ function initDashboard() {
     
     console.log('✅ Dashboard inicializado com sucesso!');
     showToast('Dashboard carregado!', 'success');
+}
+
+/**
+ * Filtra dashboard por ANO
+ */
+function filterByYear(year) {
+    AppState.currentYear = year;
+    AppState.currentMonth = 'all'; // Reset mês ao trocar ano
+    
+    // Atualizar estado visual do slicer de ano
+    Components.updateYearSlicerState(year);
+    
+    // Recarregar slicers de mês para o ano selecionado
+    Components.renderMonthSlicers(year);
+    
+    // Atualizar view atual
+    switch(AppState.currentTab) {
+        case 'overview':
+            Views.updateOverview(year, 'all');
+            break;
+        case 'conformidade':
+            Views.updateConformidade(year);
+            break;
+        case 'inspecao':
+            Views.updateInspecao(year, 'all');
+            break;
+        case 'evacuacao':
+            Views.renderEvacuacao(); // Recriar gráfico
+            break;
+        case 'brigada':
+            Views.renderBrigada(); // Recarregar tabela
+            break;
+    }
+    
+    showToast('Ano: ' + year, 'info');
 }
 
 /**
@@ -50,7 +86,7 @@ function switchTab(tabId) {
         case 'overview':
             Views.renderOverview();
             if (AppState.currentMonth !== 'all') {
-                Views.updateOverview(AppState.currentMonth);
+                Views.updateOverview(AppState.currentYear, AppState.currentMonth);
             }
             break;
         case 'conformidade':
@@ -59,7 +95,7 @@ function switchTab(tabId) {
         case 'inspecao':
             Views.renderInspecao();
             if (AppState.currentMonth !== 'all') {
-                Views.updateInspecao(AppState.currentMonth);
+                Views.updateInspecao(AppState.currentYear, AppState.currentMonth);
             }
             break;
         case 'evacuacao':
@@ -78,18 +114,23 @@ function switchTab(tabId) {
  */
 function filterDashboard(month) {
     AppState.currentMonth = month;
+    
+    // Atualizar estado dos slicers
     Components.updateSlicerState(month);
     
+    // Atualizar view atual
     switch(AppState.currentTab) {
         case 'overview':
-            Views.updateOverview(month);
+            Views.updateOverview(AppState.currentYear, month);
             break;
         case 'inspecao':
-            Views.updateInspecao(month);
+            Views.updateInspecao(AppState.currentYear, month);
             break;
+        // Conformidade, Evacuação e Brigada não filtram por mês individual
     }
     
-    var monthName = month === 'all' ? 'Todo o Período' : MESES.fullNames[MESES.mapping[month]];
+    var mesesConfig = MESES[AppState.currentYear];
+    var monthName = month === 'all' ? 'Todo o Ano' : mesesConfig.fullNames[mesesConfig.mapping[month]];
     showToast('Filtrado: ' + monthName, 'info');
 }
 
@@ -97,15 +138,20 @@ function filterDashboard(month) {
  * Exporta dashboard
  */
 function exportDashboard() {
-    var data = [
-        { mes: 'Julho', conformidade: 95.9, obstrucoes: 20 },
-        { mes: 'Agosto', conformidade: 82.9, obstrucoes: 11 },
-        { mes: 'Setembro', conformidade: 69.7, obstrucoes: 9 },
-        { mes: 'Outubro', conformidade: 80.0, obstrucoes: 6 },
-        { mes: 'Novembro', conformidade: 97.1, obstrucoes: 20 }
-    ];
+    var currentYear = AppState.currentYear;
+    var yearData = DATABASE[currentYear];
     
-    exportToCSV(data, 'relatorio_brigada_hsm_2025.csv');
+    var data = yearData.conformidade.labels.map(function(label, index) {
+        return {
+            ano: currentYear,
+            mes: label,
+            conformidade: yearData.conformidade.values[index],
+            obstrucoesExtintores: yearData.obstrucoes.extintores[index],
+            obstrucoesHidrantes: yearData.obstrucoes.hidrantes[index]
+        };
+    });
+    
+    exportToCSV(data, 'relatorio_brigada_hsm_' + currentYear + '.csv');
     showToast('Relatório exportado!', 'success');
 }
 
@@ -113,6 +159,7 @@ function exportDashboard() {
 window.initDashboard = initDashboard;
 window.switchTab = switchTab;
 window.filterDashboard = filterDashboard;
+window.filterByYear = filterByYear;
 window.exportDashboard = exportDashboard;
 
 // Inicializar
