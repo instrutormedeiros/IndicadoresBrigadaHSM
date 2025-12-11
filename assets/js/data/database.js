@@ -3,7 +3,7 @@
  * Dados consolidados extraídos das planilhas Excel
  */
 
-export const DATABASE = {
+var DATABASE = {
     // Dados de Conformidade por Mês (calculados com precisão)
     conformidade: {
         labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov'],
@@ -20,7 +20,7 @@ export const DATABASE = {
     evacuacao: {
         labels: ['Fev', 'Abr', 'Mai', 'Jul', 'Set'],
         tempos: [361, 194, 188, 199, 192], // em segundos
-        populacao: [22, 30, 11, 10, 15]
+        popup: [22, 30, 11, 10, 15]
     },
     
     // Execução Mensal Detalhada (%)
@@ -120,14 +120,71 @@ export const DATABASE = {
 };
 
 /**
- * Função para obter dados filtrados por mês
- * @param {string} month - Mês ('jul', 'ago', 'set', 'out', 'nov', 'all')
- * @returns {Object} Dados filtrados
+ * Constantes e Configurações
  */
-export function getMonthData(month = 'all') {
-    const monthIndex = {
-        'jul': 0, 'ago': 1, 'set': 2, 'out': 3, 'nov': 4
-    }[month];
+var APP_CONFIG = {
+    name: 'Dashboard Brigada H.S.M.',
+    version: '2.0.0',
+    environment: 'production'
+};
+
+var MESES = {
+    labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov'],
+    fullNames: ['Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro'],
+    mapping: {
+        'jul': 0,
+        'ago': 1,
+        'set': 2,
+        'out': 3,
+        'nov': 4
+    }
+};
+
+var REFERENCIAS = {
+    extintores: 201,
+    hidrantes: 60,
+    luminarias: 28,
+    aterramento: 1,
+    bombas: 7,
+    portasCF: 14,
+    livroOcorrencia: 12
+};
+
+var METAS = {
+    conformidade: {
+        excelente: 95,
+        bom: 85,
+        regular: 75,
+        critico: 75
+    },
+    tempoEvacuacao: {
+        meta: 180, // 3 minutos em segundos
+        maximo: 420 // 7 minutos (legislação)
+    }
+};
+
+var COLORS = {
+    primary: '#2563eb',
+    success: '#10b981',
+    warning: '#f59e0b',
+    danger: '#ef4444',
+    info: '#3b82f6',
+    secondary: '#64748b',
+    chart: {
+        conformidade: '#2563eb',
+        extintores: '#ef4444',
+        hidrantes: '#3b82f6',
+        luminarias: '#f59e0b',
+        evacuacao: '#10b981'
+    }
+};
+
+/**
+ * Função para obter dados filtrados por mês
+ */
+function getMonthData(month) {
+    month = month || 'all';
+    var monthIndex = MESES.mapping[month];
     
     if (month === 'all' || monthIndex === undefined) {
         return {
@@ -138,7 +195,7 @@ export function getMonthData(month = 'all') {
         };
     }
     
-    const mesLabel = DATABASE.conformidade.labels[monthIndex];
+    var mesLabel = DATABASE.conformidade.labels[monthIndex];
     return {
         conformidade: DATABASE.conformidade.values[monthIndex],
         totalObstrucoes: DATABASE.obstrucoes.extintores[monthIndex] + DATABASE.obstrucoes.hidrantes[monthIndex],
@@ -146,3 +203,5 @@ export function getMonthData(month = 'all') {
         execucao: DATABASE.execucaoMensal[mesLabel]
     };
 }
+
+console.log('✅ Database carregado com sucesso');
