@@ -6,23 +6,13 @@
 var Components = {
     
     /**
-     * Renderiza o Header com filtros de período
+     * Renderiza o Header com filtros de ANO e PERÍODO
      */
     renderHeader: function() {
         var header = document.getElementById('app-header');
         
-        var slicerButtons = MESES.labels.map(function(mes, idx) {
-            return '<button onclick="filterDashboard(\'' + mes.toLowerCase() + '\')" ' +
-                   'id="btn-' + mes.toLowerCase() + '" ' +
-                   'class="slicer-btn text-xs py-2 px-3" ' +
-                   'aria-pressed="false" ' +
-                   'title="Filtrar dados de ' + MESES.fullNames[idx] + '">' +
-                   mes +
-                   '</button>';
-        }).join('');
-        
         header.innerHTML = '\
-            <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">\
+            <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">\
                 <!-- Logo e Título -->\
                 <div class="flex items-center gap-4">\
                     <div class="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/30">\
@@ -34,21 +24,36 @@ var Components = {
                         </h1>\
                         <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">\
                             <span class="pulse-dot"></span>\
-                            <span>Indicadores de Segurança • 2025</span>\
+                            <span>Indicadores de Segurança</span>\
                         </div>\
                     </div>\
                 </div>\
                 \
-                <!-- Filtros de Período -->\
-                <div class="hidden md:flex items-center bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-sm">\
-                    <span class="text-xs font-bold text-slate-400 px-3 uppercase tracking-wider">\
-                        Período:\
-                    </span>\
-                    <div class="flex gap-1" id="month-slicer">\
-                        <button onclick="filterDashboard(\'all\')" id="btn-all" class="slicer-btn slicer-active text-xs py-2 px-3" aria-pressed="true" title="Visualizar dados consolidados de todo o período">\
-                            Todos\
-                        </button>\
-                        ' + slicerButtons + '\
+                <!-- Filtros de ANO e PERÍODO -->\
+                <div class="hidden md:flex items-center gap-4">\
+                    <!-- Seletor de Ano -->\
+                    <div class="flex items-center bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-sm">\
+                        <span class="text-xs font-bold text-slate-400 px-3 uppercase tracking-wider">\
+                            Ano:\
+                        </span>\
+                        <div class="flex gap-1" id="year-slicer">\
+                            <button onclick="filterByYear(\'2025\')" id="btn-year-2025" class="slicer-btn slicer-active text-xs py-2 px-4" aria-pressed="true">\
+                                2025\
+                            </button>\
+                            <button onclick="filterByYear(\'2026\')" id="btn-year-2026" class="slicer-btn text-xs py-2 px-4" aria-pressed="false">\
+                                2026\
+                            </button>\
+                        </div>\
+                    </div>\
+                    \
+                    <!-- Seletor de Mês -->\
+                    <div class="flex items-center bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-sm">\
+                        <span class="text-xs font-bold text-slate-400 px-3 uppercase tracking-wider">\
+                            Período:\
+                        </span>\
+                        <div class="flex gap-1" id="month-slicer">\
+                            <!-- Será preenchido dinamicamente pelo JS -->\
+                        </div>\
                     </div>\
                 </div>\
                 \
@@ -63,14 +68,61 @@ var Components = {
                 </div>\
             </div>\
         ';
+        
+        // Renderizar meses do ano padrão (2025)
+        this.renderMonthSlicers('2025');
     },
     
     /**
-     * Atualiza estado visual dos botões de filtro
+     * Renderiza os slicers de mês baseado no ano
+     */
+    renderMonthSlicers: function(year) {
+        var container = document.getElementById('month-slicer');
+        if (!container) return;
+        
+        var mesesConfig = MESES[year];
+        if (!mesesConfig) return;
+        
+        var slicerButtons = '<button onclick="filterDashboard(\'all\')" id="btn-all" class="slicer-btn slicer-active text-xs py-2 px-3" aria-pressed="true" title="Visualizar dados consolidados do ano">\
+            Todos\
+        </button>';
+        
+        slicerButtons += mesesConfig.labels.map(function(mes, idx) {
+            return '<button onclick="filterDashboard(\'' + mes.toLowerCase() + '\')" ' +
+                   'id="btn-' + mes.toLowerCase() + '" ' +
+                   'class="slicer-btn text-xs py-2 px-3" ' +
+                   'aria-pressed="false" ' +
+                   'title="Filtrar dados de ' + mesesConfig.fullNames[idx] + '">' +
+                   mes +
+                   '</button>';
+        }).join('');
+        
+        container.innerHTML = slicerButtons;
+    },
+    
+    /**
+     * Atualiza estado visual dos botões de ANO
+     */
+    updateYearSlicerState: function(activeYear) {
+        var allYearButtons = document.querySelectorAll('[id^="btn-year-"]');
+        allYearButtons.forEach(function(btn) {
+            btn.classList.remove('slicer-active');
+            btn.setAttribute('aria-pressed', 'false');
+        });
+        
+        var activeBtn = document.getElementById('btn-year-' + activeYear);
+        if (activeBtn) {
+            activeBtn.classList.add('slicer-active');
+            activeBtn.setAttribute('aria-pressed', 'true');
+        }
+    },
+    
+    /**
+     * Atualiza estado visual dos botões de filtro de mês
      */
     updateSlicerState: function(activeMonth) {
         // Remove estado ativo de todos
-        var allButtons = document.querySelectorAll('.slicer-btn');
+        var allButtons = document.querySelectorAll('#month-slicer .slicer-btn');
         allButtons.forEach(function(btn) {
             btn.classList.remove('slicer-active');
             btn.setAttribute('aria-pressed', 'false');
@@ -227,12 +279,16 @@ var Components = {
     /**
      * Renderiza insights do período selecionado
      */
-    renderInsights: function(month) {
+    renderInsights: function(year, month) {
+        year = year || '2025';
         month = month || 'all';
         var container = document.getElementById('dynamic-insights');
         if (!container) return;
         
-        var insights = DATABASE.insights[month] || DATABASE.insights.all;
+        var yearData = DATABASE[year];
+        if (!yearData) return;
+        
+        var insights = yearData.insights[month] || yearData.insights.all;
         
         var insightsHTML = insights.map(function(text, index) {
             return '<div class="insight-card fade-enter" style="animation-delay: ' + (index * 100) + 'ms">' +
