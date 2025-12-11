@@ -5,105 +5,120 @@
 
 /**
  * Formata tempo de segundos para MM:SS
- * @param {number} seconds 
- * @returns {string}
  */
-export function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+function formatTime(seconds) {
+    var mins = Math.floor(seconds / 60);
+    var secs = seconds % 60;
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
 }
 
 /**
  * Converte MM:SS para segundos
- * @param {string} timeString 
- * @returns {number}
  */
-export function parseTime(timeString) {
-    const [mins, secs] = timeString.split(':').map(Number);
-    return (mins * 60) + secs;
+function parseTime(timeString) {
+    var parts = timeString.split(':').map(Number);
+    return (parts[0] * 60) + parts[1];
 }
 
 /**
  * Calcula média de um array
- * @param {number[]} arr 
- * @returns {number}
  */
-export function average(arr) {
-    return arr.reduce((a, b) => a + b, 0) / arr.length;
+function average(arr) {
+    return arr.reduce(function(a, b) { return a + b; }, 0) / arr.length;
 }
 
 /**
  * Debounce para otimizar eventos
- * @param {Function} func 
- * @param {number} wait 
- * @returns {Function}
  */
-export function debounce(func, wait = 300) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
+function debounce(func, wait) {
+    wait = wait || 300;
+    var timeout;
+    return function() {
+        var context = this;
+        var args = arguments;
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(function() {
+            func.apply(context, args);
+        }, wait);
     };
 }
 
 /**
- * Exporta dados para CSV
- * @param {Array} data 
- * @param {string} filename 
- */
-export function exportToCSV(data, filename = 'relatorio_brigada.csv') {
-    const csv = convertToCSV(data);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-}
-
-/**
- * Converte array para formato CSV
- * @param {Array} arr 
- * @returns {string}
- */
-function convertToCSV(arr) {
-    const array = [Object.keys(arr[0])].concat(arr);
-    return array.map(row => {
-        return Object.values(row).map(value => {
-            return typeof value === 'string' ? `"${value}"` : value;
-        }).join(',');
-    }).join('\n');
-}
-
-/**
  * Mostra notificação toast
- * @param {string} message 
- * @param {string} type - 'success' | 'error' | 'info'
  */
-export function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 
-                       ${type === 'success' ? 'bg-green-500' : 
-                         type === 'error' ? 'bg-red-500' : 'bg-blue-500'} 
-                       text-white font-medium text-sm`;
+function showToast(message, type) {
+    type = type || 'info';
+    var colors = {
+        'success': 'bg-green-500',
+        'error': 'bg-red-500',
+        'info': 'bg-blue-500'
+    };
+    
+    var toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ' + 
+                      colors[type] + ' text-white font-medium text-sm';
     toast.textContent = message;
+    toast.style.transition = 'all 0.3s ease';
     
     document.body.appendChild(toast);
     
-    setTimeout(() => {
+    setTimeout(function() {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(10px)';
-        setTimeout(() => toast.remove(), 300);
+        setTimeout(function() {
+            document.body.removeChild(toast);
+        }, 300);
     }, 3000);
 }
+
+/**
+ * Exporta dados para CSV
+ */
+function exportToCSV(data, filename) {
+    filename = filename || 'relatorio_brigada.csv';
+    
+    // Criar CSV
+    var headers = Object.keys(data[0]);
+    var csv = headers.join(',') + '\n';
+    
+    data.forEach(function(row) {
+        var values = headers.map(function(header) {
+            var value = row[header];
+            return typeof value === 'string' ? '"' + value + '"' : value;
+        });
+        csv += values.join(',') + '\n';
+    });
+    
+    // Download
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/**
+ * Anima mudança de valor em elemento
+ */
+function animateValue(elementId, newValue) {
+    var element = document.getElementById(elementId);
+    if (!element) return;
+    
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(-10px)';
+    element.style.transition = 'all 0.3s ease';
+    
+    setTimeout(function() {
+        element.textContent = newValue;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+    }, 150);
+}
+
+console.log('✅ Helpers carregados com sucesso');
