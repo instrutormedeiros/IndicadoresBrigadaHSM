@@ -5,7 +5,7 @@
 
 // Estado global da aplicação
 var AppState = {
-    currentTab: 'visao-geral',
+    currentTab: 'overview',
     currentMonth: 'all'
 };
 
@@ -15,18 +15,13 @@ var AppState = {
 function initDashboard() {
     console.log('🚀 Inicializando Dashboard Brigada H.S.M...');
     
-    // Inicializar ChartManager
     ChartManager.init();
-    
-    // Renderizar componentes fixos
     Components.renderHeader();
     Components.renderTabs();
-    
-    // Renderizar view inicial
-    Views.renderVisaoGeral();
+    Views.renderOverview();
     
     console.log('✅ Dashboard inicializado com sucesso!');
-    showToast('Dashboard carregado com sucesso!', 'success');
+    showToast('Dashboard carregado!', 'success');
 }
 
 /**
@@ -35,8 +30,7 @@ function initDashboard() {
 function switchTab(tabId) {
     AppState.currentTab = tabId;
     
-    // Atualizar estado visual das tabs
-    var allTabs = ['visao-geral', 'inspecao', 'evacuacao'];
+    var allTabs = ['overview', 'conformidade', 'inspecao', 'evacuacao', 'brigada'];
     allTabs.forEach(function(id) {
         var btn = document.getElementById('tab-btn-' + id);
         if (btn) {
@@ -52,10 +46,15 @@ function switchTab(tabId) {
         }
     });
     
-    // Renderizar view correspondente
     switch(tabId) {
-        case 'visao-geral':
-            Views.renderVisaoGeral();
+        case 'overview':
+            Views.renderOverview();
+            if (AppState.currentMonth !== 'all') {
+                Views.updateOverview(AppState.currentMonth);
+            }
+            break;
+        case 'conformidade':
+            Views.renderConformidade();
             break;
         case 'inspecao':
             Views.renderInspecao();
@@ -66,9 +65,11 @@ function switchTab(tabId) {
         case 'evacuacao':
             Views.renderEvacuacao();
             break;
+        case 'brigada':
+            Views.renderBrigada();
+            break;
     }
     
-    // Scroll suave para o topo
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -77,27 +78,23 @@ function switchTab(tabId) {
  */
 function filterDashboard(month) {
     AppState.currentMonth = month;
-    
-    // Atualizar estado dos slicers
     Components.updateSlicerState(month);
     
-    // Atualizar view atual
     switch(AppState.currentTab) {
-        case 'visao-geral':
-            Views.updateVisaoGeral(month);
+        case 'overview':
+            Views.updateOverview(month);
             break;
         case 'inspecao':
             Views.updateInspecao(month);
             break;
-        // Evacuação não tem filtro por mês
     }
     
     var monthName = month === 'all' ? 'Todo o Período' : MESES.fullNames[MESES.mapping[month]];
-    showToast('Filtrado para: ' + monthName, 'info');
+    showToast('Filtrado: ' + monthName, 'info');
 }
 
 /**
- * Exporta dashboard para relatório
+ * Exporta dashboard
  */
 function exportDashboard() {
     var data = [
@@ -109,32 +106,20 @@ function exportDashboard() {
     ];
     
     exportToCSV(data, 'relatorio_brigada_hsm_2025.csv');
-    showToast('Relatório exportado com sucesso!', 'success');
+    showToast('Relatório exportado!', 'success');
 }
 
-/**
- * Gera relatório completo
- */
-function generateReport() {
-    showToast('Funcionalidade em desenvolvimento', 'info');
-}
-
-/**
- * Expor funções globais
- */
+// Expor funções globais
 window.initDashboard = initDashboard;
 window.switchTab = switchTab;
 window.filterDashboard = filterDashboard;
 window.exportDashboard = exportDashboard;
-window.generateReport = generateReport;
 
-/**
- * Inicializar quando o DOM estiver pronto
- */
+// Inicializar
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDashboard);
 } else {
     initDashboard();
 }
 
-console.log('✅ Main.js carregado - Dashboard pronto para uso!');
+console.log('✅ Main.js carregado!');
