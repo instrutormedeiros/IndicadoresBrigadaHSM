@@ -22,7 +22,7 @@ var Components = {
         }).join('');
         
         header.innerHTML = '\
-            <div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">\
+            <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">\
                 <!-- Logo e Título -->\
                 <div class="flex items-center gap-4">\
                     <div class="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/30">\
@@ -30,11 +30,11 @@ var Components = {
                     </div>\
                     <div>\
                         <h1 class="text-lg font-bold text-slate-800 leading-tight">\
-                            Indicadores Brigada H.S.M.\
+                            Dashboard Brigada H.S.M.\
                         </h1>\
                         <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">\
                             <span class="pulse-dot"></span>\
-                            <span>Dados Consolidados 2025</span>\
+                            <span>Indicadores de Segurança • 2025</span>\
                         </div>\
                     </div>\
                 </div>\
@@ -46,7 +46,7 @@ var Components = {
                     </span>\
                     <div class="flex gap-1" id="month-slicer">\
                         <button onclick="filterDashboard(\'all\')" id="btn-all" class="slicer-btn slicer-active text-xs py-2 px-3" aria-pressed="true" title="Visualizar dados consolidados de todo o período">\
-                            Visão Anual\
+                            Todos\
                         </button>\
                         ' + slicerButtons + '\
                     </div>\
@@ -89,15 +89,17 @@ var Components = {
      */
     renderTabs: function() {
         var tabs = [
-            { id: 'visao-geral', label: 'Visão Geral', icon: 'ph-squares-four', description: 'Overview dos indicadores principais' },
-            { id: 'inspecao', label: 'Inspeção Detalhada', icon: 'ph-clipboard-text', description: 'Detalhamento das inspeções mensais' },
-            { id: 'evacuacao', label: 'Evacuação & Brigada', icon: 'ph-users-three', description: 'Simulados e capacitação' }
+            { id: 'overview', label: 'Visão Executiva', icon: 'ph-chart-line-up', description: 'KPIs principais e tendências' },
+            { id: 'conformidade', label: 'Conformidade', icon: 'ph-shield-check', description: 'Análise de conformidade e obstruções' },
+            { id: 'inspecao', label: 'Inspeções', icon: 'ph-clipboard-text', description: 'Checklist detalhado por sistema' },
+            { id: 'evacuacao', label: 'Evacuação', icon: 'ph-users-three', description: 'Simulados e tempos de resposta' },
+            { id: 'brigada', label: 'Brigada', icon: 'ph-identification-badge', description: 'Capacitação e efetivo' }
         ];
         
         var container = document.getElementById('tab-navigation');
         
         var tabsHTML = tabs.map(function(tab) {
-            var isActive = tab.id === 'visao-geral';
+            var isActive = tab.id === 'overview';
             var activeClasses = isActive ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300';
             
             return '<button onclick="switchTab(\'' + tab.id + '\')" ' +
@@ -129,38 +131,38 @@ var Components = {
                 id: 'conformidade',
                 icon: 'ph-shield-check',
                 iconColor: 'text-blue-600',
-                label: 'Conformidade Média',
+                label: 'Conformidade Geral',
                 value: data.conformidade.toFixed(1) + '%',
                 badge: conformidadeBadge,
-                description: 'Média ponderada dos itens inspecionados'
+                description: 'Média ponderada dos sistemas'
             },
             {
                 id: 'obstrucoes',
                 icon: 'ph-warning-circle',
                 iconColor: 'text-orange-500',
-                label: 'Obstruções',
+                label: 'Obstruções Totais',
                 value: data.totalObstrucoes,
-                badge: { text: 'Itens Bloqueados', class: 'badge badge-info' },
-                description: 'Extintores e Hidrantes'
+                badge: { text: 'Detectadas', class: 'badge badge-warning' },
+                description: 'Extintores + Hidrantes'
             },
             {
                 id: 'evacuacao',
                 icon: 'ph-timer',
                 iconColor: 'text-emerald-500',
-                label: 'Tempo Evacuação',
-                value: data.tempoEvacuacao || '03:12',
-                badge: null,
+                label: 'Último Simulado',
+                value: '03:12',
+                badge: { text: 'Dentro da Meta', class: 'badge badge-success' },
                 description: 'Meta: 03:00 | Máx: 07:00',
-                progress: 85
+                progress: 94
             },
             {
                 id: 'brigada',
                 icon: 'ph-users-three',
                 iconColor: 'text-purple-500',
-                label: 'Brigada Ativa',
+                label: 'Brigada Efetiva',
                 value: '55',
-                badge: { text: 'Efetivados', class: 'badge badge-info' },
-                description: '109 Inscritos (50.5% Conv.)'
+                badge: { text: '50.5% Conv.', class: 'badge badge-info' },
+                description: '109 Inscritos no total'
             }
         ];
         
@@ -250,13 +252,13 @@ var Components = {
         if (!container) return;
         
         var items = [
-            { label: 'Extintores', value: execucaoData.extintores, ref: REFERENCIAS.extintores },
-            { label: 'Hidrantes', value: execucaoData.hidrantes, ref: REFERENCIAS.hidrantes },
-            { label: 'Luminárias', value: execucaoData.luminarias, ref: REFERENCIAS.luminarias },
-            { label: 'Aterramento', value: execucaoData.aterramento, ref: REFERENCIAS.aterramento },
-            { label: 'Bombas Incêndio', value: execucaoData.bombas, ref: REFERENCIAS.bombas },
+            { label: 'Extintores de Incêndio', value: execucaoData.extintores, ref: REFERENCIAS.extintores },
+            { label: 'Hidrantes e Mangueiras', value: execucaoData.hidrantes, ref: REFERENCIAS.hidrantes },
+            { label: 'Luminárias de Emergência', value: execucaoData.luminarias, ref: REFERENCIAS.luminarias },
+            { label: 'Sistema de Aterramento', value: execucaoData.aterramento, ref: REFERENCIAS.aterramento },
+            { label: 'Bombas de Incêndio', value: execucaoData.bombas, ref: REFERENCIAS.bombas },
             { label: 'Portas Corta-Fogo', value: execucaoData.portasCF, ref: REFERENCIAS.portasCF },
-            { label: 'Livro Ocorrências', value: execucaoData.livroOcorrencia, ref: REFERENCIAS.livroOcorrencia }
+            { label: 'Livro de Ocorrências', value: execucaoData.livroOcorrencia, ref: REFERENCIAS.livroOcorrencia }
         ];
         
         var itemsHTML = items.map(function(item, index) {
@@ -267,7 +269,7 @@ var Components = {
                    '<div class="flex justify-between items-center text-xs mb-1.5">' +
                    '<span class="font-medium text-slate-600">' + item.label + '</span>' +
                    '<div class="flex items-center gap-2">' +
-                   '<span class="text-slate-400 text-[10px]">' + inspected + '/' + item.ref + '</span>' +
+                   '<span class="text-slate-400 text-[10px] font-mono">' + inspected + '/' + item.ref + '</span>' +
                    '<span class="font-bold text-slate-800 tabular-nums">' + item.value + '%</span>' +
                    '</div>' +
                    '</div>' +
