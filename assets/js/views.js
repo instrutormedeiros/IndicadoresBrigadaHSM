@@ -1,35 +1,35 @@
 /**
  * VIEWS
- * Todas as views (páginas) do dashboard
+ * Todas as views (páginas) do dashboard - OTIMIZADAS PARA ABOVE THE FOLD
  */
 
 var Views = {
     
     /**
-     * VIEW: VISÃO GERAL
+     * VIEW: OVERVIEW (Visão Executiva)
      */
-    renderVisaoGeral: function() {
+    renderOverview: function() {
         var container = document.getElementById('dashboard-content');
         
         container.innerHTML = '\
-            <div id="content-visao-geral" class="fade-enter space-y-6">\
+            <div id="content-overview" class="fade-enter space-y-6">\
                 <!-- KPI Cards -->\
-                <div id="kpi-cards-container" class="grid grid-cols-1 md:grid-cols-4 gap-4"></div>\
+                <div id="kpi-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>\
                 \
-                <!-- Gráficos e Insights -->\
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">\
-                    <!-- Gráfico de Conformidade -->\
-                    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
-                        <div class="flex justify-between items-center mb-6">\
+                <!-- Grid Principal 2x2 -->\
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">\
+                    <!-- Tendência de Conformidade -->\
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
+                        <div class="flex justify-between items-center mb-4">\
                             <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
-                                <span class="w-1 h-6 bg-blue-600 rounded-full"></span>\
-                                Tendência de Conformidade (%)\
+                                <span class="w-1 h-5 bg-blue-600 rounded-full"></span>\
+                                Evolução Mensal (%)\
                             </h3>\
-                            <span class="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full font-medium">\
-                                Jul - Nov 2025\
+                            <span class="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full font-semibold">\
+                                Jul-Nov 2025\
                             </span>\
                         </div>\
-                        <div class="h-[320px] w-full relative">\
+                        <div class="h-[280px] w-full relative">\
                             <canvas id="complianceChart"></canvas>\
                         </div>\
                     </div>\
@@ -37,96 +37,118 @@ var Views = {
                     <!-- Insights Dinâmicos -->\
                     <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">\
                         <h3 class="text-slate-800 font-bold text-base mb-4 flex items-center gap-2">\
-                            <i class="ph-fill ph-lightbulb text-yellow-500 text-xl"></i>\
-                            Insights do Período\
+                            <i class="ph-fill ph-lightbulb text-yellow-500 text-lg"></i>\
+                            Destaques do Período\
                         </h3>\
-                        <div id="dynamic-insights" class="space-y-3 flex-grow overflow-y-auto pr-2"></div>\
-                        <div class="mt-4 pt-4 border-t border-slate-100">\
-                            <button onclick="generateReport()" class="w-full py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:shadow-sm">\
-                                <i class="ph ph-file-text"></i> Ver Relatório Completo →\
-                            </button>\
-                        </div>\
-                    </div>\
-                </div>\
-                \
-                <!-- Gráfico de Obstruções -->\
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
-                    <div class="flex justify-between items-center mb-6">\
-                        <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
-                            <span class="w-1 h-6 bg-orange-500 rounded-full"></span>\
-                            Obstruções Detectadas por Mês\
-                        </h3>\
-                        <div class="flex items-center gap-2">\
-                            <span class="flex items-center gap-1 text-xs">\
-                                <span class="w-3 h-3 bg-red-500 rounded"></span>\
-                                <span class="text-slate-600">Extintores</span>\
-                            </span>\
-                            <span class="flex items-center gap-1 text-xs">\
-                                <span class="w-3 h-3 bg-blue-500 rounded"></span>\
-                                <span class="text-slate-600">Hidrantes</span>\
-                            </span>\
-                        </div>\
-                    </div>\
-                    <div class="h-[320px] w-full relative">\
-                        <canvas id="obstructionsChart"></canvas>\
-                    </div>\
-                </div>\
-                \
-                <!-- Grid de Métricas Secundárias -->\
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">\
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">\
-                        <div class="flex items-center justify-between mb-3">\
-                            <h4 class="text-xs font-bold text-blue-700 uppercase tracking-wide">Variação do Período</h4>\
-                            <i class="ph-fill ph-trend-up text-2xl text-blue-600"></i>\
-                        </div>\
-                        <div class="text-3xl font-bold text-blue-900">+27.4%</div>\
-                        <p class="text-xs text-blue-700 mt-1">Set (69.7%) → Nov (97.1%)</p>\
+                        <div id="dynamic-insights" class="space-y-3 flex-grow"></div>\
                     </div>\
                     \
-                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 rounded-xl border border-emerald-200">\
-                        <div class="flex items-center justify-between mb-3">\
-                            <h4 class="text-xs font-bold text-emerald-700 uppercase tracking-wide">Tendência Dez/2025</h4>\
-                            <i class="ph-fill ph-chart-line text-2xl text-emerald-600"></i>\
+                    <!-- Métricas de Performance -->\
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">\
+                        <div class="flex items-center justify-between mb-4">\
+                            <h4 class="text-sm font-bold text-blue-700 uppercase tracking-wide">Variação Total</h4>\
+                            <i class="ph-fill ph-trend-up text-3xl text-blue-600"></i>\
                         </div>\
-                        <div class="text-3xl font-bold text-emerald-900">95.5%</div>\
-                        <p class="text-xs text-emerald-700 mt-1">Projeção baseada em média móvel</p>\
+                        <div class="text-4xl font-bold text-blue-900 mb-2">+27.4%</div>\
+                        <p class="text-sm text-blue-700">Set (69.7%) → Nov (97.1%)</p>\
+                        <div class="mt-4 pt-4 border-t border-blue-200">\
+                            <div class="text-xs text-blue-600 font-semibold">Melhor Mês: <span class="text-blue-900">Novembro</span></div>\
+                        </div>\
                     </div>\
                     \
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200">\
-                        <div class="flex items-center justify-between mb-3">\
-                            <h4 class="text-xs font-bold text-purple-700 uppercase tracking-wide">Melhor Mês</h4>\
-                            <i class="ph-fill ph-trophy text-2xl text-purple-600"></i>\
+                    <!-- Status Geral -->\
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl border border-emerald-200">\
+                        <div class="flex items-center justify-between mb-4">\
+                            <h4 class="text-sm font-bold text-emerald-700 uppercase tracking-wide">Status Atual</h4>\
+                            <i class="ph-fill ph-check-circle text-3xl text-emerald-600"></i>\
                         </div>\
-                        <div class="text-3xl font-bold text-purple-900">Nov/2025</div>\
-                        <p class="text-xs text-purple-700 mt-1">97.1% de conformidade média</p>\
+                        <div class="text-4xl font-bold text-emerald-900 mb-2">97.1%</div>\
+                        <p class="text-sm text-emerald-700">Conformidade Novembro/2025</p>\
+                        <div class="mt-4 pt-4 border-t border-emerald-200">\
+                            <div class="text-xs text-emerald-600 font-semibold">Meta Anual: <span class="text-emerald-900">> 95%</span></div>\
+                        </div>\
                     </div>\
                 </div>\
             </div>\
         ';
         
-        // Inicializar componentes
-        this.initializeVisaoGeral();
+        this.initializeOverview();
     },
     
-    /**
-     * Inicializa componentes da visão geral
-     */
-    initializeVisaoGeral: function() {
+    initializeOverview: function() {
         var data = getMonthData('all');
         
-        // Renderizar KPIs
         Components.renderKPICards({
             conformidade: data.conformidade,
             totalObstrucoes: data.totalObstrucoes,
             tempoEvacuacao: '03:12'
         });
         
-        // Renderizar insights
         Components.renderInsights('all');
         
-        // Criar gráficos
         ChartManager.createConformidade(
             'complianceChart',
+            DATABASE.conformidade.labels,
+            DATABASE.conformidade.values
+        );
+    },
+    
+    updateOverview: function(month) {
+        month = month || 'all';
+        var data = getMonthData(month);
+        
+        Components.updateKPIValues(data);
+        Components.renderInsights(month);
+        
+        if (month === 'all') {
+            ChartManager.update('conformidade', DATABASE.conformidade.labels, DATABASE.conformidade.values);
+        } else {
+            var monthIndex = MESES.mapping[month];
+            ChartManager.update('conformidade', [MESES.labels[monthIndex]], [DATABASE.conformidade.values[monthIndex]]);
+        }
+    },
+    
+    /**
+     * VIEW: CONFORMIDADE
+     */
+    renderConformidade: function() {
+        var container = document.getElementById('dashboard-content');
+        
+        container.innerHTML = '\
+            <div id="content-conformidade" class="fade-enter space-y-6">\
+                <!-- Grid Principal -->\
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">\
+                    <!-- Gráfico de Conformidade -->\
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
+                        <div class="flex justify-between items-center mb-4">\
+                            <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
+                                <span class="w-1 h-5 bg-blue-600 rounded-full"></span>\
+                                Linha do Tempo\
+                            </h3>\
+                        </div>\
+                        <div class="h-[320px] w-full relative">\
+                            <canvas id="complianceChartDetail"></canvas>\
+                        </div>\
+                    </div>\
+                    \
+                    <!-- Obstruções -->\
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
+                        <div class="flex justify-between items-center mb-4">\
+                            <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
+                                <span class="w-1 h-5 bg-orange-500 rounded-full"></span>\
+                                Obstruções Mensais\
+                            </h3>\
+                        </div>\
+                        <div class="h-[320px] w-full relative">\
+                            <canvas id="obstructionsChart"></canvas>\
+                        </div>\
+                    </div>\
+                </div>\
+            </div>\
+        ';
+        
+        ChartManager.createConformidade(
+            'complianceChartDetail',
             DATABASE.conformidade.labels,
             DATABASE.conformidade.values
         );
@@ -140,36 +162,6 @@ var Views = {
     },
     
     /**
-     * Atualiza visão geral com filtro de mês
-     */
-    updateVisaoGeral: function(month) {
-        month = month || 'all';
-        var data = getMonthData(month);
-        
-        // Atualizar KPIs
-        Components.updateKPIValues(data);
-        
-        // Atualizar insights
-        Components.renderInsights(month);
-        
-        // Atualizar gráficos
-        if (month === 'all') {
-            ChartManager.update('conformidade', DATABASE.conformidade.labels, DATABASE.conformidade.values);
-            ChartManager.update('obstrucoes', DATABASE.conformidade.labels, {
-                ext: DATABASE.obstrucoes.extintores,
-                hid: DATABASE.obstrucoes.hidrantes
-            });
-        } else {
-            var monthIndex = MESES.mapping[month];
-            ChartManager.update('conformidade', [MESES.labels[monthIndex]], [DATABASE.conformidade.values[monthIndex]]);
-            ChartManager.update('obstrucoes', [MESES.labels[monthIndex]], {
-                ext: [DATABASE.obstrucoes.extintores[monthIndex]],
-                hid: [DATABASE.obstrucoes.hidrantes[monthIndex]]
-            });
-        }
-    },
-    
-    /**
      * VIEW: INSPEÇÃO DETALHADA
      */
     renderInspecao: function() {
@@ -178,89 +170,25 @@ var Views = {
         container.innerHTML = '\
             <div id="content-inspecao" class="fade-enter space-y-6">\
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
-                    <h3 class="text-slate-800 font-bold text-lg mb-2 flex items-center gap-2">\
-                        <i class="ph-fill ph-clipboard-text text-blue-600 text-2xl"></i>\
-                        Checklist de Conformidade Detalhado\
-                    </h3>\
-                    <p class="text-sm text-slate-500 mb-6">Status de execução dos itens de inspeção mensal</p>\
-                    \
-                    <div id="inspection-bars" class="space-y-4"></div>\
-                </div>\
-                \
-                <!-- Tabela de Referências -->\
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
-                    <h3 class="text-slate-800 font-bold text-base mb-4 flex items-center gap-2">\
-                        <i class="ph-fill ph-list-checks text-emerald-600 text-xl"></i>\
-                        Referências de Inspeção\
-                    </h3>\
-                    <div class="overflow-x-auto">\
-                        <table class="data-table">\
-                            <thead>\
-                                <tr>\
-                                    <th>Item</th>\
-                                    <th class="text-center">Quantidade Total</th>\
-                                    <th class="text-center">Periodicidade</th>\
-                                    <th class="text-center">Responsável</th>\
-                                </tr>\
-                            </thead>\
-                            <tbody>\
-                                <tr>\
-                                    <td class="font-semibold">Extintores de Incêndio</td>\
-                                    <td class="text-center tabular-nums">201 unidades</td>\
-                                    <td class="text-center">Mensal</td>\
-                                    <td class="text-center">Brigada</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Hidrantes e Mangueiras</td>\
-                                    <td class="text-center tabular-nums">60 pontos</td>\
-                                    <td class="text-center">Mensal</td>\
-                                    <td class="text-center">Brigada</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Luminárias de Emergência</td>\
-                                    <td class="text-center tabular-nums">28 unidades</td>\
-                                    <td class="text-center">Mensal</td>\
-                                    <td class="text-center">Manutenção</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Sistema de Aterramento</td>\
-                                    <td class="text-center tabular-nums">1 sistema</td>\
-                                    <td class="text-center">Mensal</td>\
-                                    <td class="text-center">Elétrica</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Bombas de Incêndio</td>\
-                                    <td class="text-center tabular-nums">7 unidades</td>\
-                                    <td class="text-center">Mensal</td>\
-                                    <td class="text-center">Manutenção</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Portas Corta-Fogo</td>\
-                                    <td class="text-center tabular-nums">14 unidades</td>\
-                                    <td class="text-center">Mensal</td>\
-                                    <td class="text-center">Brigada</td>\
-                                </tr>\
-                                <tr>\
-                                    <td class="font-semibold">Livro de Ocorrências</td>\
-                                    <td class="text-center tabular-nums">12 registros/mês</td>\
-                                    <td class="text-center">Diário</td>\
-                                    <td class="text-center">Brigada</td>\
-                                </tr>\
-                            </tbody>\
-                        </table>\
+                    <div class="flex justify-between items-center mb-6">\
+                        <h3 class="text-slate-800 font-bold text-lg flex items-center gap-2">\
+                            <i class="ph-fill ph-clipboard-text text-blue-600 text-2xl"></i>\
+                            Checklist de Conformidade por Sistema\
+                        </h3>\
+                        <span class="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full font-semibold">\
+                            Última Inspeção: Nov/2025\
+                        </span>\
                     </div>\
+                    \
+                    <div id="inspection-bars" class="space-y-4 max-w-4xl"></div>\
                 </div>\
             </div>\
         ';
         
-        // Inicializar dados
         var data = getMonthData('all');
         Components.renderChecklistBars(data.execucao);
     },
     
-    /**
-     * Atualiza inspeção com filtro de mês
-     */
     updateInspecao: function(month) {
         month = month || 'all';
         var data = getMonthData(month);
@@ -268,61 +196,111 @@ var Views = {
     },
     
     /**
-     * VIEW: EVACUAÇÃO & BRIGADA
+     * VIEW: EVACUAÇÃO
      */
     renderEvacuacao: function() {
         var container = document.getElementById('dashboard-content');
         
         container.innerHTML = '\
             <div id="content-evacuacao" class="fade-enter space-y-6">\
-                <!-- Gráfico de Evacuação -->\
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
-                    <div class="flex justify-between items-center mb-6">\
-                        <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
-                            <span class="w-1 h-6 bg-emerald-600 rounded-full"></span>\
-                            Histórico de Simulados de Evacuação\
-                        </h3>\
-                        <div class="flex gap-2">\
-                            <span class="px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-700">\
-                                META: 3:00 min\
-                            </span>\
-                            <span class="px-3 py-1 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-700">\
-                                MÁX: 7:00 min\
-                            </span>\
+                <!-- Gráfico + Cards -->\
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">\
+                    <!-- Gráfico -->\
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">\
+                        <div class="flex justify-between items-center mb-4">\
+                            <h3 class="text-slate-800 font-bold text-base flex items-center gap-2">\
+                                <span class="w-1 h-5 bg-emerald-600 rounded-full"></span>\
+                                Histórico de Simulados\
+                            </h3>\
+                            <div class="flex gap-2">\
+                                <span class="px-2 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-700">\
+                                    META: 3min\
+                                </span>\
+                                <span class="px-2 py-1 bg-red-50 border border-red-200 rounded-full text-[10px] font-bold text-red-700">\
+                                    MÁX: 7min\
+                                </span>\
+                            </div>\
+                        </div>\
+                        <div class="h-[280px] w-full relative">\
+                            <canvas id="evacuationChart"></canvas>\
                         </div>\
                     </div>\
-                    <div class="h-[320px] w-full relative">\
-                        <canvas id="evacuationChart"></canvas>\
+                    \
+                    <!-- Estatísticas -->\
+                    <div class="space-y-4">\
+                        <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 rounded-xl border border-emerald-200">\
+                            <div class="flex items-center justify-between mb-3">\
+                                <h4 class="text-xs font-bold text-emerald-700 uppercase">Melhor Tempo</h4>\
+                                <i class="ph-fill ph-trophy text-2xl text-emerald-600"></i>\
+                            </div>\
+                            <div class="text-3xl font-bold text-emerald-900">03:08</div>\
+                            <p class="text-xs text-emerald-700 mt-1">Simulado de Maio/2025</p>\
+                        </div>\
+                        \
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">\
+                            <div class="flex items-center justify-between mb-3">\
+                                <h4 class="text-xs font-bold text-blue-700 uppercase">Último Simulado</h4>\
+                                <i class="ph-fill ph-timer text-2xl text-blue-600"></i>\
+                            </div>\
+                            <div class="text-3xl font-bold text-blue-900">03:12</div>\
+                            <p class="text-xs text-blue-700 mt-1">Setembro/2025 • 15 pessoas</p>\
+                        </div>\
+                        \
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200">\
+                            <div class="flex items-center justify-between mb-3">\
+                                <h4 class="text-xs font-bold text-purple-700 uppercase">Taxa de Sucesso</h4>\
+                                <i class="ph-fill ph-check-circle text-2xl text-purple-600"></i>\
+                            </div>\
+                            <div class="text-3xl font-bold text-purple-900">100%</div>\
+                            <p class="text-xs text-purple-700 mt-1">Todos dentro do limite</p>\
+                        </div>\
                     </div>\
                 </div>\
-                \
-                <!-- Cards de Brigada -->\
+            </div>\
+        ';
+        
+        ChartManager.createEvacuacao(
+            'evacuationChart',
+            DATABASE.evacuacao.labels,
+            DATABASE.evacuacao.tempos
+        );
+    },
+    
+    /**
+     * VIEW: BRIGADA
+     */
+    renderBrigada: function() {
+        var container = document.getElementById('dashboard-content');
+        
+        container.innerHTML = '\
+            <div id="content-brigada" class="fade-enter space-y-6">\
+                <!-- KPIs Brigada -->\
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">\
                     <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200">\
                         <div class="flex items-center justify-between mb-4">\
-                            <h4 class="text-sm font-bold text-purple-700">Total de Inscritos</h4>\
+                            <h4 class="text-sm font-bold text-purple-700 uppercase">Total Inscritos</h4>\
                             <i class="ph-fill ph-user-plus text-3xl text-purple-600"></i>\
                         </div>\
                         <div class="text-4xl font-bold text-purple-900 mb-2">109</div>\
-                        <p class="text-xs text-purple-700">Colaboradores interessados</p>\
+                        <p class="text-xs text-purple-700">Colaboradores registrados</p>\
                     </div>\
                     \
                     <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl border border-emerald-200">\
                         <div class="flex items-center justify-between mb-4">\
-                            <h4 class="text-sm font-bold text-emerald-700">Brigadistas Ativos</h4>\
+                            <h4 class="text-sm font-bold text-emerald-700 uppercase">Brigadistas Ativos</h4>\
                             <i class="ph-fill ph-shield-check text-3xl text-emerald-600"></i>\
                         </div>\
                         <div class="text-4xl font-bold text-emerald-900 mb-2">55</div>\
-                        <p class="text-xs text-emerald-700">Treinados e certificados</p>\
+                        <p class="text-xs text-emerald-700">Certificados e operacionais</p>\
                     </div>\
                     \
                     <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">\
                         <div class="flex items-center justify-between mb-4">\
-                            <h4 class="text-sm font-bold text-blue-700">Taxa de Conversão</h4>\
+                            <h4 class="text-sm font-bold text-blue-700 uppercase">Taxa de Conversão</h4>\
                             <i class="ph-fill ph-chart-pie text-3xl text-blue-600"></i>\
                         </div>\
                         <div class="text-4xl font-bold text-blue-900 mb-2">50.5%</div>\
-                        <p class="text-xs text-blue-700">Inscritos que concluíram</p>\
+                        <p class="text-xs text-blue-700">Conclusão dos treinamentos</p>\
                     </div>\
                 </div>\
                 \
@@ -339,7 +317,7 @@ var Views = {
                                     <th>Turma</th>\
                                     <th class="text-center">Inscritos</th>\
                                     <th class="text-center">Treinados</th>\
-                                    <th class="text-center">Taxa Conclusão</th>\
+                                    <th class="text-center">Aproveitamento</th>\
                                     <th class="text-center">Validade</th>\
                                 </tr>\
                             </thead>\
@@ -349,21 +327,21 @@ var Views = {
                                     <td class="text-center tabular-nums">39</td>\
                                     <td class="text-center tabular-nums font-bold text-emerald-600">27</td>\
                                     <td class="text-center"><span class="badge badge-success">69.2%</span></td>\
-                                    <td class="text-center text-slate-600">01/03/2026</td>\
+                                    <td class="text-center text-slate-600 font-mono text-xs">01/03/2026</td>\
                                 </tr>\
                                 <tr>\
                                     <td class="font-semibold">Junho/2025</td>\
                                     <td class="text-center tabular-nums">21</td>\
                                     <td class="text-center tabular-nums font-bold text-orange-600">8</td>\
                                     <td class="text-center"><span class="badge badge-warning">38.1%</span></td>\
-                                    <td class="text-center text-slate-600">01/07/2026</td>\
+                                    <td class="text-center text-slate-600 font-mono text-xs">01/07/2026</td>\
                                 </tr>\
                                 <tr>\
                                     <td class="font-semibold">Setembro/2025</td>\
                                     <td class="text-center tabular-nums">49</td>\
                                     <td class="text-center tabular-nums font-bold text-blue-600">20</td>\
                                     <td class="text-center"><span class="badge badge-warning">40.8%</span></td>\
-                                    <td class="text-center text-slate-600">01/09/2026</td>\
+                                    <td class="text-center text-slate-600 font-mono text-xs">01/09/2026</td>\
                                 </tr>\
                             </tbody>\
                         </table>\
@@ -371,13 +349,6 @@ var Views = {
                 </div>\
             </div>\
         ';
-        
-        // Criar gráfico de evacuação
-        ChartManager.createEvacuacao(
-            'evacuationChart',
-            DATABASE.evacuacao.labels,
-            DATABASE.evacuacao.tempos
-        );
     }
 };
 
